@@ -1,83 +1,101 @@
-import React, { useEffect, useState } from "react";
-import style from "./App.module.css";
-import Cards from "./components/Cards/Cards.jsx";
-import Nav from "./components/Navbar/Nav";
+import Cards from "./components/cards/Cards";
 import axios from "axios";
-import Detail from "./components/Detail/Detail";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import logoRM from "./assets/logorm.png";
+import {useState, useEffect} from "react";
+import {Route, Routes, useLocation, useNavigate} from "react-router-dom";
+
+import NavBar from "./components/navBar/navBar";
+
+import "./App.css";
+import Detail from "./views/detail/detail";
+import About from "./views/about/about";
+import ErrorPage from "./views/error/errorPage";
+import LandingPage from "./views/landing/landingPage";
 
 function App() {
-  // var characters = [] // ASI NO, como estado
+  const [characters, setCharacters] = useState([]);
+  const location = useLocation();
 
-  // const array = useState([]); // Que retorna esta funcion cuando la invoco? --> [ state  , setState ]
-  // const state = array[0]
-  // const setState = array[1]
-  function onSearch(dato) {
-    // agrega personajes a characters
-    axios(`https://rickandmortyapi.com/api/character/${dato}`)
-      .then((respuesta) => {
-        if (respuesta.data.name) {
-          // antes de agregar busco si "ya existe". Como lo harias?
-          // tu codigo aquí:
-          // if("yaExiste") return
-          setCharacters((oldChars) => [...oldChars, respuesta.data]);
-        } else {
-        }
-      })
-      .catch((err) => window.alert("¡No hay personajes con este ID!"));
+  const navigate = useNavigate();
+  const [access, setAccess] = useState(false);
+  const EMAIL = "guillermo-bayona@hotmail.com";
+  const PASSWORD = "password40";
+
+  function loginHandler(userData) {
+    if (userData.password === PASSWORD && userData.email === EMAIL) {
+      setAccess(true);
+      navigate("/home");
+    }
   }
 
-  function onClose(id) {
-    // elimina personajes de characters
-    // window.alert("onClose :)")
-    setCharacters(
-      characters.filter((pj) => {
-        return pj.id !== Number(id);
-      })
-    );
+  useEffect(() => {
+    !access && navigate("/");
+  }, [access]);
+
+  function searchHandler(id) {
+    // setCharacters([...characters, example]);
+    axios(`https://rickandmortyapi.com/api/character/${id}`)
+    .then(({data}) => {
+    if (data.name) {
+
+        setCharacters((oldChars) => [...oldChars, data]);
+      } else {
+        //window.alert("¡No hay personajes con este ID!");
+      }
+    })
+    .catch((err) => window.alert("¡No hay personajes con este ID!"));
   }
 
-  const [characters, setCharacters] = useState([]); // [{}]
+  function closeHandler(id) {
+    let deleted = characters.filter((character) => character.id !== Number(id));
 
-  // const location = useLocation();
-  // console.log("location", location);
+    setCharacters(deleted);
+  }
 
-  // let navigate = useNavigate()
-  // function handle(){
-  //   navigate("/algo")
-  // }
+  function randomHandler() {
+    let haveIt = [];
+    //Generate random number
+    let random = (Math.random() * 826).toFixed();
+
+    //Coerce to number by boxing
+    random = Number(random);
+
+    if (!haveIt.includes(random)) {
+      haveIt.push(random);
+      fetch(`https://rickandmortyapi.com/api/character/${random}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.name) {
+            setCharacters((oldChars) => [...oldChars, data]);
+          } else {
+            window.alert("No hay personajes con ese ID");
+          }
+        });
+    } else {
+      console.log("Ya agregaste todos los personajes");
+      return false;
+    }
+  }
 
   return (
-    <div className={style.App}>
-      <Nav onSearch={onSearch} />
+    <div className="App">
+      <img className="title" src={logoRM} alt="logo" />
+      {location.pathname !== "/" && (
+        <NavBar onSearch={searchHandler} random={randomHandler} />
+      )}
+
       <Routes>
-        {/* <Route path="*" element={<Nav onSearch={onSearch} />} /> */}
-        <Route path="/" element={<h1>Welcome</h1>} />
+        <Route path="/" element={<LandingPage login={loginHandler} />} />
         <Route
           path="/home"
-          element={<Cards characters={characters} onClose={onClose} />}
+          element={<Cards characters={characters} onClose={closeHandler} />}
         />
-        <Route path="/about" element={<h1>Soy el about</h1>} />
-        <Route path="/character/:id/:name" element={<Detail />} />
+        <Route path="/detail/:id" element={<Detail />} />
+        <Route path="/about" element={<About />} />
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </div>
   );
 }
 
 export default App;
-
-// lo que tenemos con axios pero con fetch
-
-// fetch(`https://rickandmortyapi.com/api/character/${dato}`)
-// .then(respuesta => respuesta.json())
-// .then((respuestaJson) => {
-//   if (respuestaJson.name) {
-//     setCharacters((oldChars) => [...oldChars, respuestaJson]);
-//   } else {
-//   }
-// })
-// .catch((err) => window.alert("¡No hay personajes con este ID!"));
-{
-  /*
-   */
-}

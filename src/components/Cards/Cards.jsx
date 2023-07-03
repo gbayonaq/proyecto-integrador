@@ -1,21 +1,13 @@
-import Card from "./Singular/Card";
-import style from "./Cards.module.css";
+import Card from "../card/Card";
+import style from "./cards.module.css";
 
 export default function Cards(props) {
+  const {characters, onClose} = props;
+
   return (
-    <div className={style.container}>
-      {props.characters.map((pj) => (
-        <Card
-          key={pj.id}
-          id={pj.id}
-          name={pj.name}
-          species={pj.species}
-          onClose={props.onClose}
-          gender={pj.gender}
-          status={pj.status}
-          image={pj.image}
-          origin={pj.origin.name}
-        />
+    <div className={style.cardList}>
+      {characters.map((character) => (
+        <Card key={character.id} character={character} onClose={onClose} />
       ))}
     </div>
   );
